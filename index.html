@@ -8,35 +8,26 @@
         :root { --primary: #004a99; --claro: #ef3340; --directv: #00A1DE; --success: #28a745; --danger: #dc3545; --dark: #212529; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 10px; background-color: #f4f7f6; color: #333; }
         .container { max-width: 1350px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        
         .header-main { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
         .header-main h1 { color: var(--primary); margin: 0; font-size: 1.8em; text-transform: uppercase; }
-        
         .loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; background: #e1f5fe; border-radius: 5px; margin-bottom: 10px; }
-
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; }
         label { margin-bottom: 5px; font-weight: 600; font-size: 0.8em; }
         input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9em; }
-        
         #empresa { font-weight: bold; color: white; }
         .bg-directv { background-color: var(--directv); }
         .bg-claro { background-color: var(--claro); }
-
         .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; transition: 0.3s; }
         .btn-save:disabled { background: #ccc; cursor: not-allowed; }
-        
         .search-area { margin: 20px 0; }
-        #buscarInput { width: 100%; padding: 12px 20px; border-radius: 50px; border: 2px solid var(--primary); outline: none; box-sizing: border-box; font-size: 1em; }
-
+        #buscarInput { width: 100%; padding: 15px 20px; border-radius: 50px; border: 3px solid var(--primary); outline: none; box-sizing: border-box; font-size: 1.1em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th { background: #f1f1f1; padding: 12px; text-align: left; font-size: 0.75em; border-bottom: 2px solid #ddd; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85em; }
-        
         .badge-marca { padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 0.75em; }
         .badge-deco { background: #333; color: #0f0; padding: 3px 6px; border-radius: 4px; font-family: monospace; }
-        
         .status-pendiente { background: #ffeeba; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
         .status-entregado { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
     </style>
@@ -46,7 +37,7 @@
 <div class="container">
     <div class="header-main">
         <h1>PUNTO PRINCIPAL TELECOMUNICACIONES</h1>
-        <div id="loadingStatus" class="loading">Cargando base de datos...</div>
+        <div id="loadingStatus" class="loading">🔄 Sincronizando con Google Sheets...</div>
     </div>
     
     <div class="grid-form">
@@ -70,7 +61,7 @@
     <button class="btn-save" id="btnGuardar" onclick="guardarVenta()">REGISTRAR Y SINCRONIZAR</button>
 
     <div class="search-area">
-        <input type="text" id="buscarInput" onkeyup="filtrar()" placeholder="🔍 Buscar por nombre, cédula, marca o equipo...">
+        <input type="text" id="buscarInput" oninput="filtrar()" placeholder="🔍 BUSCAR AHORA (Nombre, Cédula o Equipo)...">
     </div>
 
     <div class="table-responsive">
@@ -91,7 +82,6 @@
 </div>
 
 <script>
-    // --- TU ENLACE DE GOOGLE ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV5AbZynKHswQ3f-_87_rOrcLuD8ghaexkzEzyLqVoQ9AuJaiOesEuHjzEXebkiBDufw/exec";
     
     const planesDirectv = ["Prepago HD", "Oro Plus", "Platino", "DIRECTV GO"];
@@ -113,14 +103,17 @@
     }
 
     async function fetchData() {
-        document.getElementById('loadingStatus').style.display = 'block';
+        const loader = document.getElementById('loadingStatus');
+        loader.style.display = 'block';
         try {
             const response = await fetch(SCRIPT_URL + "?action=get");
             const data = await response.json();
-            ventasGlobales = data.reverse(); 
+            ventasGlobales = Array.isArray(data) ? data.reverse() : [];
             render(ventasGlobales);
-        } catch (e) { console.error("Error cargando datos", e); }
-        document.getElementById('loadingStatus').style.display = 'none';
+        } catch (e) { 
+            console.error("Error cargando datos", e);
+        }
+        loader.style.display = 'none';
     }
 
     async function guardarVenta() {
@@ -155,6 +148,7 @@
                 await fetchData();
                 btn.disabled = false;
                 btn.innerText = "REGISTRAR Y SINCRONIZAR";
+                alert("✅ Registrado con éxito");
             }, 1500);
         } catch (e) { 
             alert("Error de conexión"); 
@@ -167,21 +161,21 @@
         body.innerHTML = "";
         
         if (!lista || lista.length === 0) {
-            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros.</td></tr>";
+            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros encontrados.</td></tr>";
             return;
         }
 
         lista.forEach(v => {
-            const n = v.nombre || v.Nombre || "";
-            const c = v.cedula || v.Cedula || "";
-            const t = v.telefono || v.Telefono || v.tel || "";
-            const e = v.empresa || v.Empresa || "";
-            const d = v.deco || v.Deco || "";
-            const p = v.plan || v.Plan || "";
-            const st = v.estado || v.Estado || "Pendiente";
-            const fr = v.fechareg || v.fechaReg || "";
+            const n = String(v.nombre || v.Nombre || "");
+            const c = String(v.cedula || v.Cedula || "");
+            const t = String(v.telefono || v.Telefono || v.tel || "");
+            const e = String(v.empresa || v.Empresa || "");
+            const d = String(v.deco || v.Deco || "");
+            const p = String(v.plan || v.Plan || "");
+            const st = String(v.estado || v.Estado || "Pendiente");
+            const fr = String(v.fechareg || v.fechaReg || "");
             
-            const esOk = st.toLowerCase() === 'entregado';
+            const esOk = st.toLowerCase().trim() === 'entregado';
 
             body.innerHTML += `
                 <tr>
@@ -197,18 +191,24 @@
     }
 
     function filtrar() {
-        const val = document.getElementById('buscarInput').value.toLowerCase();
+        const val = document.getElementById('buscarInput').value.toLowerCase().trim();
+        
         const filtradas = ventasGlobales.filter(v => {
-            const n = (v.nombre || v.Nombre || "").toLowerCase();
-            const c = (v.cedula || v.Cedula || "").toString().toLowerCase();
-            const d = (v.deco || v.Deco || "").toLowerCase();
-            return n.includes(val) || c.includes(val) || d.includes(val);
+            const n = String(v.nombre || v.Nombre || "").toLowerCase();
+            const c = String(v.cedula || v.Cedula || "").toLowerCase();
+            const d = String(v.deco || v.Deco || "").toLowerCase();
+            const e = String(v.empresa || v.Empresa || "").toLowerCase();
+
+            return n.includes(val) || c.includes(val) || d.includes(val) || e.includes(val);
         });
+        
         render(filtradas);
     }
 
     function limpiarCampos() {
-        ['cedula','nombre','tel','correo','deco'].forEach(id => document.getElementById(id).value = "");
+        ['cedula','nombre','tel','correo','deco'].forEach(id => {
+            document.getElementById(id).value = "";
+        });
     }
 </script>
 </body>
