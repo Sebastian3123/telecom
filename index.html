@@ -3,68 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto Principal Telecom</title>
+    <title>Sistema de Gestión Telecom</title>
     <style>
         :root { --directv: #00A1DE; --claro: #ef3340; --success: #28a745; --navy: #004a99; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 10px; color: #333; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* Dashboard de Ventas */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-card { background: var(--navy); color: white; padding: 15px; border-radius: 10px; }
+        .stat-card.comision { background: var(--success); }
+        .stat-val { font-size: 1.4em; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.8em; opacity: 0.9; }
+
         h2 { text-align: center; color: var(--navy); margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-bottom: 10px; }
         .form-group { margin-bottom: 12px; }
         label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-reporte { background: #555; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+
         .search-container { margin: 25px 0 15px 0; }
         .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; font-size: 15px; width: 100%; box-sizing: border-box; outline: none; }
+
         .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; }
         .card-directv { border-left-color: var(--directv); }
         .card-claro { border-left-color: var(--claro); }
-        .badge-op { color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
-        .btn-estado { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85em; }
+        .badge-op { color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .btn-estado { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .pend { background: #ffc107; color: #000; }
-        .entr { background: var(--success); color: white; cursor: default; }
-        .info-cliente { margin-top: 10px; }
-        .info-cliente b { font-size: 1.1em; display: block; }
+        .entr { background: var(--success); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="dashboard">
+        <div class="stat-card">
+            <span class="stat-val" id="countHoy">0</span>
+            <span class="stat-label">Ventas Hoy</span>
+        </div>
+        <div class="stat-card comision">
+            <span class="stat-val" id="comiHoy">$0</span>
+            <span class="stat-label">Tu Comisión</span>
+        </div>
+    </div>
+
     <h2>PUNTO PRINCIPAL</h2>
     
-    <div class="form-grid">
-        <div class="form-group">
-            <label>Operador</label>
-            <select id="empresa" onchange="actualizarPlanes()">
-                <option value="DIRECTV">DIRECTV</option>
-                <option value="CLARO">CLARO</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Nombre Cliente</label><input type="text" id="nombre"></div>
-        <div class="form-group"><label>Cédula</label><input type="text" id="cedula"></div>
-        <div class="form-group"><label>Serial / Deco</label><input type="text" id="deco"></div>
-        <div class="form-group">
-            <label>Plan</label>
-            <select id="plan"></select>
-        </div>
+    <div class="form-group">
+        <label>Operador</label>
+        <select id="empresa" onchange="actualizarPlanes()">
+            <option value="DIRECTV">DIRECTV</option>
+            <option value="CLARO">CLARO</option>
+        </select>
     </div>
+    <div class="form-group"><label>Nombre Cliente</label><input type="text" id="nombre"></div>
+    <div class="form-group"><label>Serial / Deco</label><input type="text" id="deco"></div>
+    <div class="form-group">
+        <label>Plan</label>
+        <select id="plan"></select>
+    </div>
+
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
+    <button class="btn-reporte" onclick="generarReporte()">📄 GENERAR REPORTE DEL DÍA</button>
 
     <div class="search-container">
-        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar nombre, CC o serial...">
+        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente o serial...">
     </div>
 
-    <div id="listaVentas">
-        <p style="text-align:center; color:#999;">Cargando registros...</p>
-    </div>
+    <div id="listaVentas"></div>
 </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Z8z0hVyb5oyppOI3InHHOiHeIw8eq6e-49jyiu4YC_INmpdEYk57J93pTMW5XF95Vg/exec";
     let ventasLocales = [];
 
+    // CONFIGURA AQUÍ TUS COMISIONES
+    const VALOR_COMISION = { 'DIRECTV': 20000, 'CLARO': 15000 };
+
     const planesData = {
         'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
-        'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago Móvil']
+        'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
     };
 
     function actualizarPlanes() {
@@ -76,65 +97,80 @@
         const d = {
             action: "add",
             empresa: document.getElementById('empresa').value,
-            nombre: document.getElementById('nombre').value,
-            cedula: document.getElementById('cedula').value,
-            deco: document.getElementById('deco').value,
+            nombre: document.getElementById('nombre').value.trim(),
+            deco: document.getElementById('deco').value.trim().toUpperCase(),
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleDateString()
         };
-        if(!d.nombre || !d.cedula) return alert("Faltan datos");
+        if(!d.nombre || !d.deco) return alert("Llena los campos");
         document.getElementById('btnGuardar').disabled = true;
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
         location.reload();
     }
 
-    async function marcarEntregado(serial) {
-        if(confirm("¿Marcar como ENTREGADO?")) {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: "updateStatus", deco: serial}) });
-            location.reload();
-        }
-    }
-
     async function cargarVentas() {
-        try {
-            const res = await fetch(SCRIPT_URL + "?action=get");
-            const data = await res.json();
-            // Normalizamos los datos para que la búsqueda no falle por mayúsculas/minúsculas
-            ventasLocales = data.map(v => ({
-                Nombre: String(v.Nombre || v.nombre || ""),
-                Cedula: String(v.Cedula || v.cedula || ""),
-                Deco: String(v.Deco || v.deco || ""),
-                Empresa: String(v.Empresa || v.empresa || ""),
-                Plan: String(v.Plan || v.plan || ""),
-                Estado: String(v.Estado || v.estado || "Pendiente")
-            })).reverse();
-            renderizarLista(ventasLocales);
-        } catch(e) { console.log(e); }
+        const res = await fetch(SCRIPT_URL + "?action=get");
+        const data = await res.json();
+        const hoy = new Date().toLocaleDateString();
+        
+        ventasLocales = data.reverse();
+        
+        // Calcular Dashboard
+        const deHoy = ventasLocales.filter(v => v.FechaReg == hoy);
+        document.getElementById('countHoy').innerText = deHoy.length;
+        
+        let comisionTotal = 0;
+        deHoy.forEach(v => {
+            comisionTotal += VALOR_COMISION[v.Empresa] || 0;
+        });
+        document.getElementById('comiHoy').innerText = "$" + comisionTotal.toLocaleString();
+
+        renderizarLista(ventasLocales);
     }
 
     function renderizarLista(datos) {
         const contenedor = document.getElementById('listaVentas');
         contenedor.innerHTML = datos.map(v => `
-            <div class="card ${v.Empresa.toUpperCase() === 'DIRECTV' ? 'card-directv' : 'card-claro'}">
-                <button class="btn-estado ${v.Estado === 'Entregado' ? 'entr' : 'pend'}" onclick="marcarEntregado('${v.Deco}')">
-                    ${v.Estado}
+            <div class="card ${v.Empresa == 'DIRECTV' ? 'card-directv' : 'card-claro'}">
+                <button class="btn-estado ${v.Estado == 'Entregado' ? 'entr' : 'pend'}" onclick="marcarEntregado('${v.Deco}')">
+                    ${v.Estado || 'Pendiente'}
                 </button>
-                <span class="badge-op" style="background:${v.Empresa.toUpperCase() === 'DIRECTV' ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
-                <div class="info-cliente">
-                    <b>${v.Nombre}</b>
-                    <div style="font-size:0.85em; color:#666">CC: ${v.Cedula} | SN: ${v.Deco}<br>${v.Plan}</div>
-                </div>
+                <span class="badge-op" style="background:${v.Empresa == 'DIRECTV' ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
+                <div style="margin-top:10px"><b>${v.Nombre}</b></div>
+                <div style="font-size:0.8em;color:#666">${v.Plan} | SN: ${v.Deco}</div>
             </div>`).join('');
     }
 
+    function generarReporte() {
+        const hoy = new Date().toLocaleDateString();
+        const deHoy = ventasLocales.filter(v => v.FechaReg == hoy);
+        if(deHoy.length === 0) return alert("No hay ventas hoy");
+
+        let texto = `REPORTE DE VENTAS - ${hoy}\n\n`;
+        deHoy.forEach((v, i) => {
+            texto += `${i+1}. ${v.Empresa} - ${v.Nombre} (${v.Plan})\n`;
+        });
+        texto += `\nTOTAL VENTAS: ${deHoy.length}\n`;
+        texto += `COMISIÓN ESTIMADA: ${document.getElementById('comiHoy').innerText}`;
+
+        const blob = new Blob([texto], { type: "text/plain" });
+        const anchor = document.createElement("a");
+        anchor.download = `Reporte_${hoy.replace(/\//g,'-')}.txt`;
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+    }
+
     function filtrarVentas() {
-        const busqueda = document.getElementById('inputBusqueda').value.toLowerCase();
-        const filtradas = ventasLocales.filter(v => 
-            v.Nombre.toLowerCase().includes(busqueda) || 
-            v.Cedula.includes(busqueda) || 
-            v.Deco.toLowerCase().includes(busqueda)
-        );
-        renderizarLista(filtradas);
+        const bus = document.getElementById('inputBusqueda').value.toLowerCase();
+        const fil = ventasLocales.filter(v => v.Nombre.toLowerCase().includes(bus) || v.Deco.toLowerCase().includes(bus));
+        renderizarLista(fil);
+    }
+
+    async function marcarEntregado(serial) {
+        if(confirm("¿Marcar como Entregado?")) {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action:"updateStatus", deco:serial}) });
+            location.reload();
+        }
     }
 
     actualizarPlanes();
