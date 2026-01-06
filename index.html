@@ -3,34 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecom Master Pro</title>
+    <title>Sistema de Gestión Telecom</title>
     <style>
         :root { --directv: #00A1DE; --claro: #ef3340; --success: #28a745; --navy: #004a99; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 10px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 10px; color: #333; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Dashboard */
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--navy); color: white; padding: 15px; border-radius: 10px; text-align: center; }
+        /* Dashboard de Ventas */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-card { background: var(--navy); color: white; padding: 15px; border-radius: 10px; }
         .stat-card.comision { background: var(--success); }
         .stat-val { font-size: 1.4em; font-weight: bold; display: block; }
-        .stat-label { font-size: 0.75em; text-transform: uppercase; }
+        .stat-label { font-size: 0.8em; opacity: 0.9; }
 
-        h2 { text-align: center; color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; font-size: 0.8em; font-weight: bold; color: #666; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        h2 { text-align: center; color: var(--navy); margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-bottom: 10px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-reporte { background: #6c757d; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-reporte { background: #555; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
 
-        .search-input { margin-top: 20px; border: 2px solid #eee; border-radius: 20px; padding: 10px 20px; width: 100%; box-sizing: border-box; }
+        .search-container { margin: 25px 0 15px 0; }
+        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; font-size: 15px; width: 100%; box-sizing: border-box; outline: none; }
 
-        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 12px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; text-align: left; }
         .card-directv { border-left-color: var(--directv); }
         .card-claro { border-left-color: var(--claro); }
-        .btn-estado { float: right; border: none; padding: 6px 10px; border-radius: 5px; font-weight: bold; font-size: 0.8em; }
-        .pend { background: #ffc107; }
+        .badge-op { color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .btn-estado { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .pend { background: #ffc107; color: #000; }
         .entr { background: var(--success); color: white; }
     </style>
 </head>
@@ -65,115 +67,93 @@
     </div>
 
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
-    <button class="btn-reporte" onclick="descargarReporte()">📄 DESCARGAR REPORTE DÍA</button>
+    <button class="btn-reporte" onclick="generarReporte()">📄 GENERAR REPORTE DEL DÍA</button>
 
-    <input type="text" id="inputBusqueda" class="search-input" oninput="filtrar()" placeholder="🔍 Buscar cliente...">
+    <div class="search-container">
+        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente o serial...">
+    </div>
 
-    <div id="listaVentas"></div>
+    <div id="listaVentas" style="text-align: center; color: #999;">Cargando datos...</div>
 </div>
 
 <script>
+    // NUEVO LINK PROPORCIONADO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Z8z0hVyb5oyppOI3InHHOiHeIw8eq6e-49jyiu4YC_INmpdEYk57J93pTMW5XF95Vg/exec";
-    let ventasLocales = [];
 
-    const COMISIONES = { 'DIRECTV': 20000, 'CLARO': 15000 };
-    const PLANES = {
+    // COMISIONES: Puedes cambiar estos valores si ganas diferente
+    const VALOR_COMISION = { 'DIRECTV': 20000, 'CLARO': 15000 };
+
+    const planesData = {
         'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
         'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
     };
 
     function actualizarPlanes() {
         const op = document.getElementById('empresa').value;
-        document.getElementById('plan').innerHTML = PLANES[op].map(p => `<option value="${p}">${p}</option>`).join('');
+        document.getElementById('plan').innerHTML = planesData[op].map(p => `<option value="${p}">${p}</option>`).join('');
     }
 
     async function guardar() {
         const d = {
             action: "add",
             empresa: document.getElementById('empresa').value,
-            nombre: document.getElementById('nombre').value,
-            deco: document.getElementById('deco').value,
+            nombre: document.getElementById('nombre').value.trim(),
+            deco: document.getElementById('deco').value.trim().toUpperCase(),
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleDateString()
         };
-        if(!d.nombre || !d.deco) return alert("Completa los datos");
+        if(!d.nombre || !d.deco) return alert("Por favor, llena el nombre y el serial.");
         document.getElementById('btnGuardar').disabled = true;
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
         location.reload();
     }
 
-    async function cargar() {
+    async function cargarVentas() {
         try {
             const res = await fetch(SCRIPT_URL + "?action=get");
             const data = await res.json();
             const hoy = new Date().toLocaleDateString();
             
+            // Limpieza y normalización de datos del Excel
             ventasLocales = data.map(v => ({
-                Nombre: v.Nombre || "Sin nombre",
-                Empresa: v.Empresa || "DIRECTV",
-                Deco: v.Deco || "S/N",
-                Plan: v.Plan || "General",
-                Estado: v.Estado || "Pendiente",
-                FechaReg: v.FechaReg || ""
+                Nombre: v.Nombre || v.nombre || "N/A",
+                Empresa: (v.Empresa || v.empresa || "DIRECTV").toUpperCase(),
+                Deco: v.Deco || v.deco || "S/N",
+                Plan: v.Plan || v.plan || "General",
+                Estado: v.Estado || v.estado || "Pendiente",
+                FechaReg: v.FechaReg || v.fechareg || ""
             })).reverse();
-
-            // Dashboard
+            
+            // Calcular Dashboard
             const deHoy = ventasLocales.filter(v => v.FechaReg == hoy);
             document.getElementById('countHoy').innerText = deHoy.length;
-            let totalComi = 0;
-            deHoy.forEach(v => totalComi += COMISIONES[v.Empresa.toUpperCase()] || 0);
-            document.getElementById('comiHoy').innerText = "$" + totalComi.toLocaleString();
+            
+            let comisionTotal = 0;
+            deHoy.forEach(v => {
+                comisionTotal += VALOR_COMISION[v.Empresa] || 0;
+            });
+            document.getElementById('comiHoy').innerText = "$" + comisionTotal.toLocaleString();
 
-            renderizar(ventasLocales);
-        } catch (e) {
-            document.getElementById('listaVentas').innerHTML = "Error cargando datos...";
+            renderizarLista(ventasLocales);
+        } catch(e) {
+            document.getElementById('listaVentas').innerHTML = "Error: Verifica los títulos de tu Excel.";
         }
     }
 
-    function renderizar(datos) {
-        const lista = document.getElementById('listaVentas');
-        lista.innerHTML = datos.map(v => `
-            <div class="card ${v.Empresa.toUpperCase() == 'DIRECTV' ? 'card-directv' : 'card-claro'}">
-                <button class="btn-estado ${v.Estado == 'Entregado' ? 'entr' : 'pend'}" onclick="cambiarE('${v.Deco}')">
+    function renderizarLista(datos) {
+        const contenedor = document.getElementById('listaVentas');
+        if(datos.length === 0) { contenedor.innerHTML = "No hay registros."; return; }
+        
+        contenedor.innerHTML = datos.map(v => `
+            <div class="card ${v.Empresa == 'DIRECTV' ? 'card-directv' : 'card-claro'}">
+                <button class="btn-estado ${v.Estado == 'Entregado' ? 'entr' : 'pend'}" onclick="marcarEntregado('${v.Deco}')">
                     ${v.Estado}
                 </button>
-                <b style="color:${v.Empresa.toUpperCase() == 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${v.Empresa}</b>
-                <div>${v.Nombre}</div>
-                <div style="font-size:0.8em; color:#666">${v.Plan} | ${v.Deco}</div>
-            </div>
-        `).join('');
+                <span class="badge-op" style="background:${v.Empresa == 'DIRECTV' ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
+                <div style="margin-top:10px"><b>${v.Nombre}</b></div>
+                <div style="font-size:0.8em;color:#666">${v.Plan} | SN: ${v.Deco}</div>
+            </div>`).join('');
     }
 
-    function descargarReporte() {
-        const hoy = new Date().toLocaleDateString();
-        const deHoy = ventasLocales.filter(v => v.FechaReg == hoy);
-        if(deHoy.length === 0) return alert("No hay ventas hoy");
-        
-        let txt = `REPORTE TELECOM - ${hoy}\n\n`;
-        deHoy.forEach((v, i) => txt += `${i+1}. ${v.Nombre} - ${v.Empresa} (${v.Plan})\n`);
-        txt += `\nTOTAL VENTAS: ${deHoy.length}\nCOMISIÓN: ${document.getElementById('comiHoy').innerText}`;
-        
-        const blob = new Blob([txt], {type: "text/plain"});
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `Reporte_${hoy}.txt`;
-        a.click();
-    }
-
-    function filtrar() {
-        const t = document.getElementById('inputBusqueda').value.toLowerCase();
-        renderizar(ventasLocales.filter(v => v.Nombre.toLowerCase().includes(t) || v.Deco.toLowerCase().includes(t)));
-    }
-
-    async function cambiarE(s) {
-        if(confirm("¿Entregado?")) {
-            await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body:JSON.stringify({action:"updateStatus", deco:s})});
-            location.reload();
-        }
-    }
-
-    actualizarPlanes();
-    cargar();
-</script>
-</body>
-</html>
+    function generarReporte() {
+        const hoy =
