@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión Telecom</title>
+    <title>Punto Principal - Gestión de Ventas</title>
     <style>
         :root { --directv: #00A1DE; --claro: #ef3340; --success: #28a745; --navy: #004a99; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 10px; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 10px; color: #333; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Dashboard de Ventas */
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: center; }
-        .stat-card { background: var(--navy); color: white; padding: 15px; border-radius: 10px; }
+        /* Dashboard */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--navy); color: white; padding: 15px; border-radius: 10px; text-align: center; }
         .stat-card.comision { background: var(--success); }
         .stat-val { font-size: 1.4em; font-weight: bold; display: block; }
         .stat-label { font-size: 0.8em; opacity: 0.9; }
 
-        h2 { text-align: center; color: var(--navy); margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-bottom: 10px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        h2 { text-align: center; color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .btn-reporte { background: #555; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-reporte { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
 
-        .search-container { margin: 25px 0 15px 0; }
-        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; font-size: 15px; width: 100%; box-sizing: border-box; outline: none; }
+        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; margin: 20px 0 10px 0; outline: none; }
 
+        /* Tarjetas */
         .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; text-align: left; }
         .card-directv { border-left-color: var(--directv); }
         .card-claro { border-left-color: var(--claro); }
-        .badge-op { color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-        .btn-estado { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .pend { background: #ffc107; color: #000; }
+        .btn-estado { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8em; }
+        .pend { background: #ffc107; color: black; }
         .entr { background: var(--success); color: white; }
     </style>
 </head>
@@ -40,70 +37,59 @@
 
 <div class="container">
     <div class="dashboard">
-        <div class="stat-card">
-            <span class="stat-val" id="countHoy">0</span>
-            <span class="stat-label">Ventas Hoy</span>
-        </div>
-        <div class="stat-card comision">
-            <span class="stat-val" id="comiHoy">$0</span>
-            <span class="stat-label">Comisión Hoy</span>
-        </div>
+        <div class="stat-card"><span class="stat-val" id="countHoy">0</span><span class="stat-label">Ventas Hoy</span></div>
+        <div class="stat-card comision"><span class="stat-val" id="comiHoy">$0</span><span class="stat-label">Tu Comisión</span></div>
     </div>
 
     <h2>PUNTO PRINCIPAL</h2>
     
-    <div class="form-group">
-        <label>Operador</label>
-        <select id="empresa" onchange="actualizarPlanes()">
-            <option value="DIRECTV">DIRECTV</option>
-            <option value="CLARO">CLARO</option>
-        </select>
-    </div>
-    <div class="form-group"><label>Nombre Cliente</label><input type="text" id="nombre"></div>
-    <div class="form-group"><label>Serial / Deco</label><input type="text" id="deco"></div>
-    <div class="form-group">
-        <label>Plan</label>
-        <select id="plan"></select>
-    </div>
+    <select id="empresa" onchange="actualizarPlanes()">
+        <option value="DIRECTV">DIRECTV</option>
+        <option value="CLARO">CLARO</option>
+    </select>
+    <input type="text" id="nombre" placeholder="Nombre Cliente">
+    <input type="text" id="cedula" placeholder="Cédula">
+    <input type="text" id="deco" placeholder="Serial / Deco">
+    <select id="plan"></select>
 
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
-    <button class="btn-reporte" onclick="generarReporte()">📄 GENERAR REPORTE DEL DÍA</button>
+    <button class="btn-reporte" onclick="generarReporte()">📄 REPORTE DEL DÍA</button>
 
-    <div class="search-container">
-        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente o serial...">
-    </div>
+    <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar por nombre o serial...">
 
-    <div id="listaVentas" style="text-align: center; color: #999;">Cargando datos...</div>
+    <div id="listaVentas" style="text-align: center; color: #999; margin-top: 20px;">Conectando con el servidor...</div>
 </div>
 
 <script>
-    // NUEVO LINK PROPORCIONADO
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Z8z0hVyb5oyppOI3InHHOiHeIw8eq6e-49jyiu4YC_INmpdEYk57J93pTMW5XF95Vg/exec";
+    // TU LINK ACTUALIZADO
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUTvoab1RrNje9x0xq-IWNp99cM4m4-YXbZWDb7IKyNIp2evacI_-J_BUY6HdOYEcfBw/exec";
 
-    // COMISIONES: Puedes cambiar estos valores si ganas diferente
-    const VALOR_COMISION = { 'DIRECTV': 20000, 'CLARO': 15000 };
-
-    const planesData = {
+    const COMISIONES = { 'DIRECTV': 20000, 'CLARO': 15000 };
+    const PLANES_DATA = {
         'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
         'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
     };
 
+    let ventasLocales = [];
+
     function actualizarPlanes() {
         const op = document.getElementById('empresa').value;
-        document.getElementById('plan').innerHTML = planesData[op].map(p => `<option value="${p}">${p}</option>`).join('');
+        document.getElementById('plan').innerHTML = PLANES_DATA[op].map(p => `<option value="${p}">${p}</option>`).join('');
     }
 
     async function guardar() {
+        const btn = document.getElementById('btnGuardar');
         const d = {
             action: "add",
             empresa: document.getElementById('empresa').value,
             nombre: document.getElementById('nombre').value.trim(),
+            cedula: document.getElementById('cedula').value.trim(),
             deco: document.getElementById('deco').value.trim().toUpperCase(),
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleDateString()
         };
-        if(!d.nombre || !d.deco) return alert("Por favor, llena el nombre y el serial.");
-        document.getElementById('btnGuardar').disabled = true;
+        if(!d.nombre || !d.deco) return alert("Completa los datos");
+        btn.disabled = true; btn.innerText = "⏳ Guardando...";
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
         location.reload();
     }
@@ -114,46 +100,55 @@
             const data = await res.json();
             const hoy = new Date().toLocaleDateString();
             
-            // Limpieza y normalización de datos del Excel
+            // Normalizar datos para evitar errores de nombres en columnas
             ventasLocales = data.map(v => ({
                 Nombre: v.Nombre || v.nombre || "N/A",
                 Empresa: (v.Empresa || v.empresa || "DIRECTV").toUpperCase(),
                 Deco: v.Deco || v.deco || "S/N",
-                Plan: v.Plan || v.plan || "General",
+                Plan: v.Plan || v.plan || "Plan General",
                 Estado: v.Estado || v.estado || "Pendiente",
                 FechaReg: v.FechaReg || v.fechareg || ""
             })).reverse();
-            
-            // Calcular Dashboard
+
+            // Dashboard
             const deHoy = ventasLocales.filter(v => v.FechaReg == hoy);
             document.getElementById('countHoy').innerText = deHoy.length;
-            
-            let comisionTotal = 0;
-            deHoy.forEach(v => {
-                comisionTotal += VALOR_COMISION[v.Empresa] || 0;
-            });
-            document.getElementById('comiHoy').innerText = "$" + comisionTotal.toLocaleString();
+            let total = 0;
+            deHoy.forEach(v => total += (COMISIONES[v.Empresa] || 0));
+            document.getElementById('comiHoy').innerText = "$" + total.toLocaleString();
 
-            renderizarLista(ventasLocales);
-        } catch(e) {
-            document.getElementById('listaVentas').innerHTML = "Error: Verifica los títulos de tu Excel.";
+            renderizar(ventasLocales);
+        } catch (e) {
+            document.getElementById('listaVentas').innerHTML = "⚠️ Error al cargar. Verifica los nombres de las columnas en Excel.";
         }
     }
 
-    function renderizarLista(datos) {
-        const contenedor = document.getElementById('listaVentas');
-        if(datos.length === 0) { contenedor.innerHTML = "No hay registros."; return; }
-        
-        contenedor.innerHTML = datos.map(v => `
+    function renderizar(datos) {
+        const div = document.getElementById('listaVentas');
+        if(datos.length === 0) { div.innerHTML = "No hay ventas registradas."; return; }
+        div.innerHTML = datos.map(v => `
             <div class="card ${v.Empresa == 'DIRECTV' ? 'card-directv' : 'card-claro'}">
                 <button class="btn-estado ${v.Estado == 'Entregado' ? 'entr' : 'pend'}" onclick="marcarEntregado('${v.Deco}')">
                     ${v.Estado}
                 </button>
-                <span class="badge-op" style="background:${v.Empresa == 'DIRECTV' ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
-                <div style="margin-top:10px"><b>${v.Nombre}</b></div>
-                <div style="font-size:0.8em;color:#666">${v.Plan} | SN: ${v.Deco}</div>
+                <b style="color:${v.Empresa == 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${v.Empresa}</b>
+                <div style="font-weight:bold; margin-top:5px;">${v.Nombre}</div>
+                <div style="font-size:0.85em; color:#666">${v.Plan} | SN: ${v.Deco}</div>
             </div>`).join('');
     }
 
+    function filtrarVentas() {
+        const b = document.getElementById('inputBusqueda').value.toLowerCase();
+        renderizar(ventasLocales.filter(v => v.Nombre.toLowerCase().includes(b) || v.Deco.toLowerCase().includes(b)));
+    }
+
+    async function marcarEntregado(serial) {
+        if(confirm("¿Marcar como Entregado?")) {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action:"updateStatus", deco:serial}) });
+            location.reload();
+        }
+    }
+
     function generarReporte() {
-        const hoy =
+        const hoy = new Date().toLocaleDateString();
+        const deHoy = ventasLoc
