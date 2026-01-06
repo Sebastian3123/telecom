@@ -3,78 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto Principal Telecomunicaciones</title>
+    <title>Punto Principal Telecom</title>
     <style>
-        :root { --primary: #004a99; --claro: #ef3340; --directv: #00A1DE; --success: #28a745; --danger: #dc3545; --dark: #212529; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 10px; background-color: #f4f7f6; color: #333; }
-        .container { max-width: 1350px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .header-main { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
-        .header-main h1 { color: var(--primary); margin: 0; font-size: 1.8em; text-transform: uppercase; }
-        .loading { display: none; text-align: center; color: var(--primary); font-weight: bold; padding: 10px; background: #e1f5fe; border-radius: 5px; margin-bottom: 10px; }
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; font-weight: 600; font-size: 0.8em; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9em; }
-        #empresa { font-weight: bold; color: white; }
-        .bg-directv { background-color: var(--directv); }
-        .bg-claro { background-color: var(--claro); }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; transition: 0.3s; }
-        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
-        .search-area { margin: 20px 0; }
-        #buscarInput { width: 100%; padding: 15px 20px; border-radius: 50px; border: 3px solid var(--primary); outline: none; box-sizing: border-box; font-size: 1.1em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #f1f1f1; padding: 12px; text-align: left; font-size: 0.75em; border-bottom: 2px solid #ddd; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85em; }
-        .badge-marca { padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 0.75em; }
-        .badge-deco { background: #333; color: #0f0; padding: 3px 6px; border-radius: 4px; font-family: monospace; }
-        .status-pendiente { background: #ffeeba; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
-        .status-entregado { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
+        :root { --primary: #004a99; --claro: #ef3340; --directv: #00A1DE; --success: #28a745; }
+        body { font-family: sans-serif; margin: 10px; background: #f4f7f6; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; padding: 15px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .search-box { margin: 20px 0; }
+        #buscarInput { border: 2px solid var(--primary); padding: 12px; border-radius: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        th { background: #eee; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        .badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-main">
-        <h1>PUNTO PRINCIPAL TELECOMUNICACIONES</h1>
-        <div id="loadingStatus" class="loading">🔄 Sincronizando con Google Sheets...</div>
-    </div>
+    <div class="header"><h1>PUNTO PRINCIPAL TELECOM</h1></div>
     
-    <div class="grid-form">
-        <div class="form-group">
-            <label>Operador</label>
-            <select id="empresa" onchange="actualizarPlanes()" class="bg-directv">
-                <option value="DIRECTV">DIRECTV</option>
-                <option value="CLARO">CLARO</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Cédula</label><input type="text" id="cedula" placeholder="ID Cliente"></div>
-        <div class="form-group"><label>Nombre</label><input type="text" id="nombre" placeholder="Nombre completo"></div>
-        <div class="form-group"><label>Teléfono</label><input type="tel" id="tel" placeholder="Celular"></div>
-        <div class="form-group"><label>Correo</label><input type="email" id="correo" placeholder="Email"></div>
-        <div class="form-group"><label>Código Equipo</label><input type="text" id="deco" placeholder="S/N o Serie"></div>
-        <div class="form-group">
-            <label>Plan</label>
-            <select id="plan"></select>
-        </div>
-    </div>
-    <button class="btn-save" id="btnGuardar" onclick="guardarVenta()">REGISTRAR Y SINCRONIZAR</button>
+    <div id="status" style="display:none; background:#d1ecf1; padding:10px; text-align:center; margin-bottom:10px;">Cargando datos...</div>
 
-    <div class="search-area">
-        <input type="text" id="buscarInput" oninput="filtrar()" placeholder="🔍 BUSCAR AHORA (Nombre, Cédula o Equipo)...">
+    <div class="form-grid">
+        <select id="empresa"><option value="DIRECTV">DIRECTV</option><option value="CLARO">CLARO</option></select>
+        <input type="text" id="cedula" placeholder="Cédula">
+        <input type="text" id="nombre" placeholder="Nombre Cliente">
+        <input type="text" id="tel" placeholder="Teléfono">
+        <input type="text" id="deco" placeholder="Serial Equipo">
+        <select id="plan"><option value="Prepago">Prepago</option><option value="Pospago">Pospago</option></select>
+    </div>
+    <button class="btn" onclick="guardar()">REGISTRAR Y SINCRONIZAR</button>
+
+    <div class="search-box">
+        <input type="text" id="buscarInput" onkeyup="filtrar()" placeholder="🔍 BUSCAR (Nombre, Cédula o Serial)...">
     </div>
 
-    <div class="table-responsive">
-        <table id="mainTable">
+    <div style="overflow-x:auto;">
+        <table id="tablaVentas">
             <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Operador</th>
-                    <th>Cliente y Contacto</th>
-                    <th>ID Equipo</th>
-                    <th>Plan</th>
-                    <th>Estado</th>
-                </tr>
+                <tr><th>Fecha</th><th>Empresa</th><th>Cliente</th><th>Equipo</th><th>Estado</th></tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -82,134 +52,74 @@
 </div>
 
 <script>
+    // TU ENLACE ACTUALIZADO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV5AbZynKHswQ3f-_87_rOrcLuD8ghaexkzEzyLqVoQ9AuJaiOesEuHjzEXebkiBDufw/exec";
-    
-    const planesDirectv = ["Prepago HD", "Oro Plus", "Platino", "DIRECTV GO"];
-    const planesClaro = ["Triple Play", "Doble Play", "Solo Internet", "Claro TV Superior", "Pospago Móvil"];
-    let ventasGlobales = [];
+    let ventas = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-        actualizarPlanes();
-        fetchData();
-    });
-
-    function actualizarPlanes() {
-        const empresa = document.getElementById('empresa');
-        const planSelect = document.getElementById('plan');
-        const lista = empresa.value === 'DIRECTV' ? planesDirectv : planesClaro;
-        empresa.className = empresa.value === 'DIRECTV' ? 'bg-directv' : 'bg-claro';
-        planSelect.innerHTML = "";
-        lista.forEach(p => planSelect.innerHTML += `<option value="${p}">${p}</option>`);
-    }
-
-    async function fetchData() {
-        const loader = document.getElementById('loadingStatus');
-        loader.style.display = 'block';
+    async function cargar() {
+        document.getElementById('status').style.display = 'block';
         try {
-            const response = await fetch(SCRIPT_URL + "?action=get");
-            const data = await response.json();
-            ventasGlobales = Array.isArray(data) ? data.reverse() : [];
-            render(ventasGlobales);
-        } catch (e) { 
-            console.error("Error cargando datos", e);
-        }
-        loader.style.display = 'none';
+            const r = await fetch(SCRIPT_URL + "?action=get");
+            const data = await r.json();
+            ventas = data.reverse();
+            dibujar(ventas);
+        } catch(e) { console.log(e); }
+        document.getElementById('status').style.display = 'none';
     }
 
-    async function guardarVenta() {
-        const btn = document.getElementById('btnGuardar');
-        const data = {
+    function dibujar(lista) {
+        const cuerpo = document.querySelector("#tablaVentas tbody");
+        cuerpo.innerHTML = "";
+        lista.forEach(v => {
+            const emp = v.Empresa || v.empresa || "";
+            const color = emp === 'DIRECTV' ? '#00A1DE' : '#ef3340';
+            cuerpo.innerHTML += `<tr>
+                <td>${v.FechaReg || v.fechareg || ""}</td>
+                <td><span class="badge" style="background:${color}">${emp}</span></td>
+                <td><b>${v.Nombre || v.nombre || ""}</b><br>CC: ${v.Cedula || v.cedula || ""}</td>
+                <td>${v.Deco || v.deco || ""}</td>
+                <td>${v.Estado || v.estado || "Pendiente"}</td>
+            </tr>`;
+        });
+    }
+
+    async function guardar() {
+        const d = {
             action: "add",
-            id: Date.now(),
             empresa: document.getElementById('empresa').value,
-            cedula: document.getElementById('cedula').value.trim(),
-            nombre: document.getElementById('nombre').value.trim(),
-            tel: document.getElementById('tel').value.trim(),
-            correo: document.getElementById('correo').value.trim(),
-            deco: document.getElementById('deco').value.trim().toUpperCase(),
+            cedula: document.getElementById('cedula').value,
+            nombre: document.getElementById('nombre').value,
+            tel: document.getElementById('tel').value,
+            deco: document.getElementById('deco').value,
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleString(),
-            estado: 'Pendiente',
-            fechaEntrega: ''
+            estado: "Pendiente"
         };
-
-        if(!data.cedula || !data.nombre || !data.deco) {
-            alert("⚠️ Completa los datos básicos");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Sincronizando...";
-
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            setTimeout(async () => {
-                limpiarCampos();
-                await fetchData();
-                btn.disabled = false;
-                btn.innerText = "REGISTRAR Y SINCRONIZAR";
-                alert("✅ Registrado con éxito");
-            }, 1500);
-        } catch (e) { 
-            alert("Error de conexión"); 
-            btn.disabled = false;
-        }
-    }
-
-    function render(lista) {
-        const body = document.querySelector('#mainTable tbody');
-        body.innerHTML = "";
         
-        if (!lista || lista.length === 0) {
-            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros encontrados.</td></tr>";
-            return;
-        }
+        if(!d.nombre || !d.cedula) return alert("Llena los datos");
 
-        lista.forEach(v => {
-            const n = String(v.nombre || v.Nombre || "");
-            const c = String(v.cedula || v.Cedula || "");
-            const t = String(v.telefono || v.Telefono || v.tel || "");
-            const e = String(v.empresa || v.Empresa || "");
-            const d = String(v.deco || v.Deco || "");
-            const p = String(v.plan || v.Plan || "");
-            const st = String(v.estado || v.Estado || "Pendiente");
-            const fr = String(v.fechareg || v.fechaReg || "");
-            
-            const esOk = st.toLowerCase().trim() === 'entregado';
+        document.querySelector(".btn").disabled = true;
+        document.querySelector(".btn").innerText = "Enviando...";
 
-            body.innerHTML += `
-                <tr>
-                    <td><small>${fr}</small></td>
-                    <td><span class="badge-marca" style="background:${e.toUpperCase() === 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${e}</span></td>
-                    <td><b>${n}</b><br><small>CC: ${c} | 📞 ${t}</small></td>
-                    <td><span class="badge-deco">${d}</span></td>
-                    <td>${p}</td>
-                    <td><span class="${esOk ? 'status-entregado' : 'status-pendiente'}">${st}</span></td>
-                </tr>
-            `;
-        });
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        
+        setTimeout(() => {
+            alert("Venta guardada");
+            location.reload();
+        }, 2000);
     }
 
     function filtrar() {
-        const val = document.getElementById('buscarInput').value.toLowerCase().trim();
-        
-        const filtradas = ventasGlobales.filter(v => {
-            const n = String(v.nombre || v.Nombre || "").toLowerCase();
-            const c = String(v.cedula || v.Cedula || "").toLowerCase();
-            const d = String(v.deco || v.Deco || "").toLowerCase();
-            const e = String(v.empresa || v.Empresa || "").toLowerCase();
-
-            return n.includes(val) || c.includes(val) || d.includes(val) || e.includes(val);
-        });
-        
-        render(filtradas);
+        const bus = document.getElementById("buscarInput").value.toLowerCase();
+        const f = ventas.filter(v => 
+            (v.Nombre || v.nombre || "").toLowerCase().includes(bus) || 
+            (v.Cedula || v.cedula || "").toString().includes(bus) ||
+            (v.Deco || v.deco || "").toLowerCase().includes(bus)
+        );
+        dibujar(f);
     }
 
-    function limpiarCampos() {
-        ['cedula','nombre','tel','correo','deco'].forEach(id => {
-            document.getElementById(id).value = "";
-        });
-    }
+    window.onload = cargar;
 </script>
 </body>
 </html>
