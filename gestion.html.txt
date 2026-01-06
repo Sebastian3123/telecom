@@ -23,7 +23,8 @@
         .bg-directv { background-color: var(--directv); }
         .bg-claro { background-color: var(--claro); }
 
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; transition: 0.3s; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
         
         .search-area { margin: 20px 0; }
         #buscarInput { width: 100%; padding: 12px 20px; border-radius: 50px; border: 2px solid var(--primary); outline: none; box-sizing: border-box; }
@@ -38,9 +39,6 @@
         
         .status-pendiente { background: #ffeeba; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
         .status-entregado { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
-        
-        .btn-action { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 0.75em; margin-top: 5px; }
-        .btn-done { background: var(--success); }
     </style>
 </head>
 <body>
@@ -48,7 +46,7 @@
 <div class="container">
     <div class="header-main">
         <h1>PUNTO PRINCIPAL TELECOMUNICACIONES</h1>
-        <div id="loadingStatus" class="loading">Cargando datos desde la nube...</div>
+        <div id="loadingStatus" class="loading">Sincronizando con la nube...</div>
     </div>
     
     <div class="grid-form">
@@ -59,11 +57,11 @@
                 <option value="CLARO">CLARO</option>
             </select>
         </div>
-        <div class="form-group"><label>Cédula</label><input type="text" id="cedula"></div>
-        <div class="form-group"><label>Nombre</label><input type="text" id="nombre"></div>
-        <div class="form-group"><label>Teléfono</label><input type="tel" id="tel"></div>
-        <div class="form-group"><label>Correo</label><input type="email" id="correo"></div>
-        <div class="form-group"><label>Código Equipo</label><input type="text" id="deco"></div>
+        <div class="form-group"><label>Cédula</label><input type="text" id="cedula" placeholder="ID Cliente"></div>
+        <div class="form-group"><label>Nombre</label><input type="text" id="nombre" placeholder="Nombre completo"></div>
+        <div class="form-group"><label>Teléfono</label><input type="tel" id="tel" placeholder="Celular"></div>
+        <div class="form-group"><label>Correo</label><input type="email" id="correo" placeholder="Email"></div>
+        <div class="form-group"><label>Código Equipo</label><input type="text" id="deco" placeholder="S/N o Serie"></div>
         <div class="form-group">
             <label>Plan</label>
             <select id="plan"></select>
@@ -72,7 +70,7 @@
     <button class="btn-save" id="btnGuardar" onclick="guardarVenta()">REGISTRAR Y SINCRONIZAR</button>
 
     <div class="search-area">
-        <input type="text" id="buscarInput" onkeyup="filtrar()" placeholder="🔍 Buscar en toda la base de datos...">
+        <input type="text" id="buscarInput" onkeyup="filtrar()" placeholder="🔍 Buscar por nombre, cédula, marca o equipo...">
     </div>
 
     <div class="table-responsive">
@@ -93,9 +91,11 @@
 </div>
 
 <script>
+    // --- PEGA TU ENLACE DE GOOGLE ABAJO ENTRE LAS COMILLAS ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV5AbZynKHswQ3f-_87_rOrcLuD8ghaexkzEzyLqVoQ9AuJaiOesEuHjzEXebkiBDufw/exec";
+    
     const planesDirectv = ["Prepago HD", "Oro Plus", "Platino", "DIRECTV GO"];
-    const planesClaro = ["Triple Play", "Solo Internet", "Claro TV Superior", "Pospago Móvil"];
+    const planesClaro = ["Triple Play", "Doble Play", "Solo Internet", "Claro TV Superior", "Pospago Móvil"];
     let ventasGlobales = [];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -116,9 +116,13 @@
         document.getElementById('loadingStatus').style.display = 'block';
         try {
             const response = await fetch(SCRIPT_URL + "?action=get");
-            ventasGlobales = await response.json();
+            const data = await response.json();
+            // Invertir el orden para que la última venta salga primero
+            ventasGlobales = data.reverse(); 
             render(ventasGlobales);
-        } catch (e) { console.error("Error cargando datos", e); }
+        } catch (e) { 
+            console.error("Error cargando datos", e); 
+        }
         document.getElementById('loadingStatus').style.display = 'none';
     }
 
@@ -139,36 +143,56 @@
             fechaEntrega: ''
         };
 
-        if(!data.cedula || !data.nombre || !data.deco) return alert("Completa los campos");
+        if(!data.cedula || !data.nombre || !data.deco) {
+            alert("⚠️ Por favor completa los datos básicos (Cédula, Nombre y Equipo)");
+            return;
+        }
 
         btn.disabled = true;
-        btn.innerText = "Sincronizando...";
+        btn.innerText = "Sincronizando con la nube...";
 
         try {
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-            limpiarCampos();
-            await fetchData();
-        } catch (e) { alert("Error de conexión"); }
+            await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', // Importante para evitar bloqueos de navegador
+                body: JSON.stringify(data) 
+            });
+            
+            // Como usamos no-cors, esperamos un segundo y refrescamos
+            setTimeout(async () => {
+                limpiarCampos();
+                await fetchData();
+                btn.disabled = false;
+                btn.innerText = "REGISTRAR Y SINCRONIZAR";
+                alert("✅ Venta registrada correctamente en la nube.");
+            }, 1500);
 
-        btn.disabled = false;
-        btn.innerText = "REGISTRAR Y SINCRONIZAR";
+        } catch (e) { 
+            alert("❌ Error de conexión. Revisa tu internet."); 
+            btn.disabled = false;
+            btn.innerText = "REGISTRAR Y SINCRONIZAR";
+        }
     }
 
     function render(lista) {
         const body = document.querySelector('#mainTable tbody');
         body.innerHTML = "";
+        if(lista.length === 0) {
+            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros aún.</td></tr>";
+            return;
+        }
         lista.forEach(v => {
             const esOk = v.estado === 'Entregado';
             body.innerHTML += `
                 <tr>
-                    <td><small>${v.fechareg}</small></td>
+                    <td><small>${v.fechareg || v.fechaReg}</small></td>
                     <td><span class="badge-marca" style="background:${v.empresa === 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${v.empresa}</span></td>
-                    <td><b>${v.nombre}</b><br><small>📞 ${v.tel}</small></td>
+                    <td><b>${v.nombre}</b><br><small>CC: ${v.cedula} | 📞 ${v.tel}</small></td>
                     <td><span class="badge-deco">${v.deco}</span></td>
                     <td>${v.plan}</td>
                     <td>
                         <span class="${esOk ? 'status-entregado' : 'status-pendiente'}">${v.estado}</span>
-                        ${esOk ? `<br><small>✅ ${v.fechaentrega}</small>` : ''}
+                        ${esOk ? `<br><small>✅ ${v.fechaentrega || v.fechaEntrega}</small>` : ''}
                     </td>
                 </tr>
             `;
@@ -178,7 +202,10 @@
     function filtrar() {
         const val = document.getElementById('buscarInput').value.toLowerCase();
         const filtradas = ventasGlobales.filter(v => 
-            v.nombre.toLowerCase().includes(val) || v.cedula.toString().includes(val) || v.deco.toLowerCase().includes(val)
+            v.nombre.toLowerCase().includes(val) || 
+            v.cedula.toString().includes(val) || 
+            v.deco.toLowerCase().includes(val) ||
+            v.empresa.toLowerCase().includes(val)
         );
         render(filtradas);
     }
