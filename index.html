@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto Principal Telecomunicaciones - Nube</title>
+    <title>Punto Principal Telecomunicaciones</title>
     <style>
         :root { --primary: #004a99; --claro: #ef3340; --directv: #00A1DE; --success: #28a745; --danger: #dc3545; --dark: #212529; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 10px; background-color: #f4f7f6; color: #333; }
@@ -27,7 +27,7 @@
         .btn-save:disabled { background: #ccc; cursor: not-allowed; }
         
         .search-area { margin: 20px 0; }
-        #buscarInput { width: 100%; padding: 12px 20px; border-radius: 50px; border: 2px solid var(--primary); outline: none; box-sizing: border-box; }
+        #buscarInput { width: 100%; padding: 12px 20px; border-radius: 50px; border: 2px solid var(--primary); outline: none; box-sizing: border-box; font-size: 1em; }
 
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
@@ -46,7 +46,7 @@
 <div class="container">
     <div class="header-main">
         <h1>PUNTO PRINCIPAL TELECOMUNICACIONES</h1>
-        <div id="loadingStatus" class="loading">Sincronizando con la nube...</div>
+        <div id="loadingStatus" class="loading">Cargando base de datos...</div>
     </div>
     
     <div class="grid-form">
@@ -91,7 +91,7 @@
 </div>
 
 <script>
-    // --- PEGA TU ENLACE DE GOOGLE ABAJO ENTRE LAS COMILLAS ---
+    // --- TU ENLACE DE GOOGLE ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzV5AbZynKHswQ3f-_87_rOrcLuD8ghaexkzEzyLqVoQ9AuJaiOesEuHjzEXebkiBDufw/exec";
     
     const planesDirectv = ["Prepago HD", "Oro Plus", "Platino", "DIRECTV GO"];
@@ -117,12 +117,9 @@
         try {
             const response = await fetch(SCRIPT_URL + "?action=get");
             const data = await response.json();
-            // Invertir el orden para que la última venta salga primero
             ventasGlobales = data.reverse(); 
             render(ventasGlobales);
-        } catch (e) { 
-            console.error("Error cargando datos", e); 
-        }
+        } catch (e) { console.error("Error cargando datos", e); }
         document.getElementById('loadingStatus').style.display = 'none';
     }
 
@@ -144,56 +141,56 @@
         };
 
         if(!data.cedula || !data.nombre || !data.deco) {
-            alert("⚠️ Por favor completa los datos básicos (Cédula, Nombre y Equipo)");
+            alert("⚠️ Completa los datos básicos");
             return;
         }
 
         btn.disabled = true;
-        btn.innerText = "Sincronizando con la nube...";
+        btn.innerText = "Sincronizando...";
 
         try {
-            await fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                mode: 'no-cors', // Importante para evitar bloqueos de navegador
-                body: JSON.stringify(data) 
-            });
-            
-            // Como usamos no-cors, esperamos un segundo y refrescamos
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
             setTimeout(async () => {
                 limpiarCampos();
                 await fetchData();
                 btn.disabled = false;
                 btn.innerText = "REGISTRAR Y SINCRONIZAR";
-                alert("✅ Venta registrada correctamente en la nube.");
             }, 1500);
-
         } catch (e) { 
-            alert("❌ Error de conexión. Revisa tu internet."); 
+            alert("Error de conexión"); 
             btn.disabled = false;
-            btn.innerText = "REGISTRAR Y SINCRONIZAR";
         }
     }
 
     function render(lista) {
         const body = document.querySelector('#mainTable tbody');
         body.innerHTML = "";
-        if(lista.length === 0) {
-            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros aún.</td></tr>";
+        
+        if (!lista || lista.length === 0) {
+            body.innerHTML = "<tr><td colspan='6' style='text-align:center'>No hay registros.</td></tr>";
             return;
         }
+
         lista.forEach(v => {
-            const esOk = v.estado === 'Entregado';
+            const n = v.nombre || v.Nombre || "";
+            const c = v.cedula || v.Cedula || "";
+            const t = v.telefono || v.Telefono || v.tel || "";
+            const e = v.empresa || v.Empresa || "";
+            const d = v.deco || v.Deco || "";
+            const p = v.plan || v.Plan || "";
+            const st = v.estado || v.Estado || "Pendiente";
+            const fr = v.fechareg || v.fechaReg || "";
+            
+            const esOk = st.toLowerCase() === 'entregado';
+
             body.innerHTML += `
                 <tr>
-                    <td><small>${v.fechareg || v.fechaReg}</small></td>
-                    <td><span class="badge-marca" style="background:${v.empresa === 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${v.empresa}</span></td>
-                    <td><b>${v.nombre}</b><br><small>CC: ${v.cedula} | 📞 ${v.tel}</small></td>
-                    <td><span class="badge-deco">${v.deco}</span></td>
-                    <td>${v.plan}</td>
-                    <td>
-                        <span class="${esOk ? 'status-entregado' : 'status-pendiente'}">${v.estado}</span>
-                        ${esOk ? `<br><small>✅ ${v.fechaentrega || v.fechaEntrega}</small>` : ''}
-                    </td>
+                    <td><small>${fr}</small></td>
+                    <td><span class="badge-marca" style="background:${e.toUpperCase() === 'DIRECTV' ? 'var(--directv)' : 'var(--claro)'}">${e}</span></td>
+                    <td><b>${n}</b><br><small>CC: ${c} | 📞 ${t}</small></td>
+                    <td><span class="badge-deco">${d}</span></td>
+                    <td>${p}</td>
+                    <td><span class="${esOk ? 'status-entregado' : 'status-pendiente'}">${st}</span></td>
                 </tr>
             `;
         });
@@ -201,12 +198,12 @@
 
     function filtrar() {
         const val = document.getElementById('buscarInput').value.toLowerCase();
-        const filtradas = ventasGlobales.filter(v => 
-            v.nombre.toLowerCase().includes(val) || 
-            v.cedula.toString().includes(val) || 
-            v.deco.toLowerCase().includes(val) ||
-            v.empresa.toLowerCase().includes(val)
-        );
+        const filtradas = ventasGlobales.filter(v => {
+            const n = (v.nombre || v.Nombre || "").toLowerCase();
+            const c = (v.cedula || v.Cedula || "").toString().toLowerCase();
+            const d = (v.deco || v.Deco || "").toLowerCase();
+            return n.includes(val) || c.includes(val) || d.includes(val);
+        });
         render(filtradas);
     }
 
