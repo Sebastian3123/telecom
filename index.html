@@ -77,11 +77,14 @@
 </div>
 
 <script>
+    // Asegúrate de que este link sea el último que generaste en Google
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwchShkX6-JULCW-CA_6l6-TMwWMgM1iz5iNbyFxxT0g6A4p25sIqy3pOf4rcByg4yy/exec";
     
     let ventasLocales = [];
 
-    window.onload = cargarDatos;
+    window.onload = function() {
+        cargarDatos();
+    };
 
     async function cargarDatos() {
         document.getElementById('msgCarga').style.display = 'block';
@@ -90,7 +93,9 @@
             const datos = await respuesta.json();
             ventasLocales = Array.isArray(datos) ? datos.reverse() : [];
             mostrarTabla(ventasLocales);
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.log("Error al cargar:", e);
+        }
         document.getElementById('msgCarga').style.display = 'none';
     }
 
@@ -116,20 +121,27 @@
 
     async function guardar() {
         const btn = document.getElementById("btnGuardar");
+        const nombreVal = document.getElementById('nombre').value.trim();
+        const cedulaVal = document.getElementById('cedula').value.trim();
+        const decoVal = document.getElementById('deco').value.trim().toUpperCase();
+
+        if(!nombreVal || !cedulaVal) {
+            alert("Por favor llena Nombre y Cédula");
+            return;
+        }
+
         const d = {
             action: "add",
             empresa: document.getElementById('empresa').value,
-            cedula: document.getElementById('cedula').value.trim(),
-            nombre: document.getElementById('nombre').value.trim(),
+            cedula: cedulaVal,
+            nombre: nombreVal,
             tel: document.getElementById('tel').value.trim(),
-            deco: document.getElementById('deco').value.trim().toUpperCase(),
+            deco: decoVal,
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleString(),
             estado: "Pendiente"
         };
         
-        if(!d.nombre || !d.cedula) return alert("Llena Nombre y Cédula");
-
         btn.disabled = true;
         btn.innerText = "⏳ Guardando...";
 
@@ -140,8 +152,9 @@
                 location.reload(); 
             }, 2000);
         } catch(e) {
-            alert("Error");
+            alert("Error de conexión");
             btn.disabled = false;
+            btn.innerText = "REGISTRAR VENTA";
         }
     }
 
@@ -155,3 +168,6 @@
         });
         mostrarTabla(f);
     }
+</script>
+</body>
+</html>
