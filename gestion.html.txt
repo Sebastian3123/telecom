@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto Principal Telecomunicaciones</title>
+    <style>
+        :root { --primary: #004a99; --claro: #ef3340; --directv: #00A1DE; --success: #28a745; --danger: #dc3545; --dark: #212529; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1350px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        
+        /* Encabezado */
+        .header-main { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 25px; padding-bottom: 10px; }
+        .header-main h1 { color: var(--primary); margin: 0; font-size: 2.2em; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .stats-box { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
+        .stat-item { background: var(--dark); color: white; padding: 10px 20px; border-radius: 8px; text-align: center; }
+        .stat-item b { font-size: 1.3em; display: block; }
+
+        /* Formulario */
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: 600; font-size: 0.85em; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+        
+        /* Colores dinámicos para el selector de marca */
+        #empresa { font-weight: bold; color: white; }
+        .bg-directv { background-color: var(--directv); }
+        .bg-claro { background-color: var(--claro); }
+
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1em; transition: 0.3s; }
+        .btn-save:hover { background: #003366; transform: translateY(-2px); }
+
+        /* Buscador */
+        .search-area { margin: 30px 0; }
+        #buscarInput { width: 100%; padding: 15px 25px; border-radius: 50px; border: 2px solid var(--primary); font-size: 1em; outline: none; }
+
+        /* Tabla */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f1f1f1; padding: 15px; text-align: left; font-size: 0.8em; border-bottom: 2px solid #ddd; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.95em; }
+        
+        .badge-marca { padding: 5px 10px; border-radius: 5px; color: white; font-weight: bold; font-size: 0.8em; }
+        .badge-deco { background: #333; color: #0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace; }
+        
+        .status { padding: 4px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
+        .status-pendiente { background: #ffeeba; color: #856404; }
+        .status-entregado { background: #d4edda; color: #155724; }
+        
+        .btn-action { padding: 7px 12px; border: none; border-radius: 5px; cursor: pointer; color: white; margin-right: 5px; }
+        .btn-done { background: var(--success); }
+        .btn-del { background: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-main">
+        <h1>PUNTO PRINCIPAL TELECOMUNICACIONES</h1>
+        <div class="stats-box">
+            <div class="stat-item"><small>TOTAL VENTAS</small><b id="stTotal">0</b></div>
+            <div class="stat-item" style="background:var(--success)"><small>ENTREGADOS</small><b id="stOk">0</b></div>
+        </div>
+    </div>
+    
+    <div class="grid-form">
+        <div class="form-group">
+            <label>Empresa / Operador</label>
+            <select id="empresa" onchange="actualizarPlanes()" class="bg-directv">
+                <option value="DIRECTV" class="bg-directv">DIRECTV</option>
+                <option value="CLARO" class="bg-claro">CLARO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Cédula Cliente</label>
+            <input type="text" id="cedula" placeholder="ID">
+        </div>
+        <div class="form-group">
+            <label>Nombre Cliente</label>
+            <input type="text" id="nombre" placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="tel" placeholder="Celular">
+        </div>
+        <div class="form-group">
+            <label>Correo</label>
+            <input type="email" id="correo" placeholder="Email">
+        </div>
+        <div class="form-group">
+            <label>Código Equipo (S/N)</label>
+            <input type="text" id="deco" placeholder="Serie del decodificador">
+        </div>
+        <div class="form-group">
+            <label>Plan / Servicio</label>
+            <select id="plan">
+                </select>
+        </div>
+    </div>
+    <button class="btn-save" onclick="guardarVenta()">REGISTRAR VENTA EN SISTEMA</button>
+
+    <div class="search-area">
+        <input type="text" id="buscarInput" onkeyup="filtrar()" placeholder="🔍 Buscar por Nombre, Cédula, Equipo o Marca (Claro/Directv)...">
+    </div>
+
+    <div class="table-responsive">
+        <table id="mainTable">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Operador</th>
+                    <th>Cliente y Contacto</th>
+                    <th>ID Equipo</th>
+                    <th>Plan</th>
+                    <th>Estado de Entrega</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const planesDirectv = ["Prepago HD", "Oro Plus", "Platino", "DIRECTV GO"];
+    const planesClaro = ["Triple Play (TV+Int+Tel)", "Doble Play", "Solo Internet", "Claro TV Superior", "Pospago Móvil"];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarPlanes();
+        refresh();
+    });
+
+    function actualizarPlanes() {
+        const empresa = document.getElementById('empresa');
+        const planSelect = document.getElementById('plan');
+        const lista = empresa.value === 'DIRECTV' ? planesDirectv : planesClaro;
+        
+        // Cambiar color del select según marca
+        empresa.className = empresa.value === 'DIRECTV' ? 'bg-directv' : 'bg-claro';
+
+        planSelect.innerHTML = "";
+        lista.forEach(p => {
+            let opt = document.createElement('option');
+            opt.value = p;
+            opt.innerHTML = p;
+            planSelect.appendChild(opt);
+        });
+    }
+
+    function guardarVenta() {
+        const data = {
+            id: Date.now(),
+            empresa: document.getElementById('empresa').value,
+            cedula: document.getElementById('cedula').value.trim(),
+            nombre: document.getElementById('nombre').value.trim(),
+            tel: document.getElementById('tel').value.trim(),
+            correo: document.getElementById('correo').value.trim(),
+            deco: document.getElementById('deco').value.trim().toUpperCase(),
+            plan: document.getElementById('plan').value,
+            fechaReg: new Date().toLocaleString([], {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'}),
+            estado: 'Pendiente',
+            fechaEntrega: ''
+        };
+
+        if(!data.cedula || !data.nombre || !data.deco) {
+            alert("⚠️ Por favor completa los campos principales.");
+            return;
+        }
+
+        let ventas = JSON.parse(localStorage.getItem('db_punto_principal')) || [];
+        
+        if(ventas.some(v => v.deco === data.deco)) {
+            alert("❌ El código de equipo ya está registrado.");
+            return;
+        }
+
+        ventas.unshift(data);
+        localStorage.setItem('db_punto_principal', JSON.stringify(ventas));
+        
+        document.getElementById('cedula').value = "";
+        document.getElementById('nombre').value = "";
+        document.getElementById('tel').value = "";
+        document.getElementById('correo').value = "";
+        document.getElementById('deco').value = "";
+        
+        refresh();
+    }
+
+    function marcarEntrega(id) {
+        let ventas = JSON.parse(localStorage.getItem('db_punto_principal'));
+        const f = new Date();
+        const fechaHora = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        ventas = ventas.map(v => v.id === id ? {...v, estado: 'Entregado', fechaEntrega: fechaHora} : v);
+        localStorage.setItem('db_punto_principal', JSON.stringify(ventas));
+        refresh();
+    }
+
+    function refresh() {
+        const ventas = JSON.parse(localStorage.getItem('db_punto_principal')) || [];
+        render(ventas);
+        document.getElementById('stTotal').innerText = ventas.length;
+        document.getElementById('stOk').innerText = ventas.filter(v => v.estado === 'Entregado').length;
+    }
+
+    function render(lista) {
+        const body = document.querySelector('#mainTable tbody');
+        body.innerHTML = "";
+
+        lista.forEach(v => {
+            const esOk = v.estado === 'Entregado';
+            const colorMarca = v.empresa === 'DIRECTV' ? 'var(--directv)' : 'var(--claro)';
+            
+            body.innerHTML += `
+                <tr>
+                    <td><small>${v.fechaReg}</small></td>
+                    <td><span class="badge-marca" style="background:${colorMarca}">${v.empresa}</span></td>
+                    <td>
+                        <b>${v.nombre}</b><br>
+                        <small>C.C. ${v.cedula}</small><br>
+                        <small>📞 ${v.tel} | ✉️ ${v.correo}</small>
+                    </td>
+                    <td><span class="badge-deco">${v.deco}</span></td>
+                    <td>${v.plan}</td>
+                    <td>
+                        <span class="status ${esOk ? 'status-entregado' : 'status-pendiente'}">${v.estado}</span>
+                        ${esOk ? `<br><small style="color:green">✅ ${v.fechaEntrega}</small>` : ''}
+                    </td>
+                    <td>
+                        ${!esOk ? `<button class="btn-action btn-done" onclick="marcarEntrega(${v.id})">Entregar</button>` : ''}
+                        <button class="btn-action btn-del" onclick="eliminar(${v.id})">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function filtrar() {
+        const val = document.getElementById('buscarInput').value.toLowerCase();
+        const ventas = JSON.parse(localStorage.getItem('db_punto_principal')) || [];
+        const filtradas = ventas.filter(v => 
+            v.nombre.toLowerCase().includes(val) || 
+            v.cedula.includes(val) || 
+            v.deco.toLowerCase().includes(val) ||
+            v.empresa.toLowerCase().includes(val)
+        );
+        render(filtradas);
+    }
+
+    function eliminar(id) {
+        if(confirm("¿Eliminar registro?")) {
+            let ventas = JSON.parse(localStorage.getItem('db_punto_principal'));
+            ventas = ventas.filter(v => v.id !== id);
+            localStorage.setItem('db_punto_principal', JSON.stringify(ventas));
+            refresh();
+        }
+    }
+</script>
+
+</body>
+</html>
