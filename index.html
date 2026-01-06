@@ -17,7 +17,11 @@
         .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
         .btn-reg:disabled { background: #999; }
 
-        /* Estilo de las tarjetas de ventas */
+        /* BUSCADOR */
+        .search-container { margin-top: 25px; position: relative; }
+        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; font-size: 15px; }
+
+        /* TARJETAS DE VENTAS */
         .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; }
         .card-directv { border-left-color: var(--directv); }
         .card-claro { border-left-color: var(--claro); }
@@ -45,9 +49,9 @@
         </select>
     </div>
 
-    <div class="form-group"><label>Nombre del Cliente</label><input type="text" id="nombre" placeholder="Ej: Juan Perez"></div>
-    <div class="form-group"><label>Cédula</label><input type="number" id="cedula" placeholder="Número de identificación"></div>
-    <div class="form-group"><label>Serial / Deco</label><input type="text" id="deco" placeholder="SN o ID del equipo"></div>
+    <div class="form-group"><label>Nombre del Cliente</label><input type="text" id="nombre"></div>
+    <div class="form-group"><label>Cédula</label><input type="number" id="cedula"></div>
+    <div class="form-group"><label>Serial / Deco</label><input type="text" id="deco"></div>
     
     <div class="form-group">
         <label>Plan Contratado</label>
@@ -56,13 +60,18 @@
 
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
 
-    <div id="listaVentas" style="margin-top: 25px;">
+    <div class="search-container">
+        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar por nombre, CC o serial...">
+    </div>
+
+    <div id="listaVentas" style="margin-top: 15px;">
         <p style="text-align:center; color:#999;">Cargando registros...</p>
     </div>
 </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7Z8z0hVyb5oyppOI3InHHOiHeIw8eq6e-49jyiu4YC_INmpdEYk57J93pTMW5XF95Vg/exec";
+    let ventasLocales = []; // Aquí guardamos los datos para buscar sin recargar
 
     const planesData = {
         'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
@@ -87,29 +96,23 @@
             fechaReg: new Date().toLocaleDateString()
         };
 
-        if(!d.nombre || !d.cedula || !d.deco) return alert("Por favor completa los datos principales.");
+        if(!d.nombre || !d.cedula || !d.deco) return alert("Por favor completa los datos.");
 
         btn.disabled = true;
-        btn.innerText = "⏳ Registrando...";
+        btn.innerText = "⏳ Guardando...";
 
         try {
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-            alert("✅ Venta registrada correctamente");
             location.reload();
         } catch(e) {
-            alert("Error al guardar");
+            alert("Error");
             btn.disabled = false;
         }
     }
 
-    async function marcarEntregado(serial, estadoActual) {
-        if(estadoActual === 'Entregado') return;
-        if(confirm("¿Confirmas que el equipo ya fue ENTREGADO?")) {
-            const toast = document.createElement("div");
-            toast.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:10px 20px; border-radius:20px; z-index:1000;";
-            toast.innerText = "Actualizando estado...";
-            document.body.appendChild(toast);
-
+    async function marcarEntregado(serial, estado) {
+        if(estado === 'Entregado') return;
+        if(confirm("¿Marcar como ENTREGADO?")) {
             await fetch(SCRIPT_URL, { 
                 method: 'POST', 
                 mode: 'no-cors', 
@@ -122,41 +125,49 @@
     async function cargarVentas() {
         try {
             const res = await fetch(SCRIPT_URL + "?action=get");
-            const data = await res.json();
-            const contenedor = document.getElementById('listaVentas');
-            
-            if(!data || data.length === 0) {
-                contenedor.innerHTML = "<p style='text-align:center'>No hay ventas hoy</p>";
-                return;
-            }
-
-            contenedor.innerHTML = data.reverse().map(v => {
-                const esDTV = v.Empresa === 'DIRECTV';
-                const esEntregado = v.Estado === 'Entregado';
-                
-                return `
-                <div class="card ${esDTV ? 'card-directv' : 'card-claro'}">
-                    <button class="btn-estado ${esEntregado ? 'entr' : 'pend'}" 
-                            onclick="marcarEntregado('${v.Deco}', '${v.Estado}')">
-                        ${v.Estado || 'Pendiente'}
-                    </button>
-                    <span class="badge-op" style="background:${esDTV ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
-                    <div class="info-cliente">
-                        <b>${v.Nombre}</b>
-                        <div class="info-plan">${v.Plan} | SN: ${v.Deco}</div>
-                    </div>
-                </div>
-                `;
-            }).join('');
+            ventasLocales = await res.json();
+            ventasLocales.reverse(); // Mostrar las últimas primero
+            renderizarLista(ventasLocales);
         } catch(e) {
-            document.getElementById('listaVentas').innerHTML = "<p>Error al cargar datos</p>";
+            document.getElementById('listaVentas').innerHTML = "<p>Error de carga</p>";
         }
     }
 
-    // Iniciar
+    function renderizarLista(datos) {
+        const contenedor = document.getElementById('listaVentas');
+        if(datos.length === 0) {
+            contenedor.innerHTML = "<p style='text-align:center'>No se encontraron resultados</p>";
+            return;
+        }
+        contenedor.innerHTML = datos.map(v => {
+            const esDTV = v.Empresa === 'DIRECTV';
+            const esEntregado = v.Estado === 'Entregado';
+            return `
+            <div class="card ${esDTV ? 'card-directv' : 'card-claro'}">
+                <button class="btn-estado ${esEntregado ? 'entr' : 'pend'}" onclick="marcarEntregado('${v.Deco}', '${v.Estado}')">
+                    ${v.Estado || 'Pendiente'}
+                </button>
+                <span class="badge-op" style="background:${esDTV ? '#00A1DE' : '#ef3340'}">${v.Empresa}</span>
+                <div class="info-cliente">
+                    <b>${v.Nombre}</b>
+                    <div class="info-plan">CC: ${v.Cedula} | SN: ${v.Deco}<br>${v.Plan}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function filtrarVentas() {
+        const texto = document.getElementById('inputBusqueda').value.toLowerCase();
+        const filtradas = ventasLocales.filter(v => 
+            v.Nombre.toLowerCase().includes(texto) || 
+            v.Cedula.toString().includes(texto) || 
+            v.Deco.toLowerCase().includes(texto)
+        );
+        renderizarLista(filtradas);
+    }
+
     actualizarPlanes();
     cargarVentas();
 </script>
-
 </body>
 </html>
