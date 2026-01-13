@@ -3,37 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto Principal - Gestión Telecom</title>
+    <title>Punto Principal - Gestión</title>
     <style>
-        :root { --directv: #00A1DE; --claro: #ef3340; --navy: #004a99; --success: #28a745; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 10px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        :root { --navy: #004a99; --directv: #00A1DE; --claro: #ef3340; }
+        body { font-family: sans-serif; background: #f0f2f5; margin: 10px; padding: 0; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--navy); margin-top: 0; }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .full-w { grid-column: span 2; }
+        label { display: block; font-weight: bold; margin: 10px 0 5px; font-size: 14px; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 18px; margin-top: 20px; cursor: pointer; }
+        
+        .search-container { margin-top: 30px; }
+        .search-input { border: 2px solid var(--navy); border-radius: 20px; padding: 10px 15px; width: 100%; box-sizing: border-box; }
 
-        label { display: block; font-size: 0.8em; font-weight: bold; margin-bottom: 3px; color: #666; margin-top: 5px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; }
-        input:focus { border-color: var(--navy); }
-        
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; }
-        .btn-reg:disabled { background: #ccc; }
-
-        .search-container { margin: 25px 0 10px 0; }
-        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; font-size: 16px; }
-
-        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; text-align: left; }
-        .card-dtv { border-left-color: var(--directv); }
-        .card-cla { border-left-color: var(--claro); }
-        
-        .btn-status { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75em; }
-        .pend { background: #ffc107; color: black; }
-        .entr { background: var(--success); color: white; }
-        
-        .badge { font-size: 0.7em; font-weight: bold; padding: 2px 6px; border-radius: 4px; color: white; text-transform: uppercase; }
-        .dtv-bg { background: var(--directv); }
-        .cla-bg { background: var(--claro); }
+        .card { background: #fff; border-radius: 8px; padding: 15px; margin-top: 15px; border-left: 5px solid var(--navy); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .btn-status { float: right; padding: 5px 10px; border-radius: 5px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .pend { background: #ffc107; }
+        .entr { background: #28a745; color: white; }
     </style>
 </head>
 <body>
@@ -41,7 +29,115 @@
 <div class="container">
     <h2>PUNTO PRINCIPAL</h2>
     
-    <div class="form-grid">
-        <div class="full-w">
-            <label>Operador</label>
-            <select id="empresa" onchange="actualizarPlanes()">
+    <label>Operador</label>
+    <select id="empresa" onchange="actualizarPlanes()">
+        <option value="DIRECTV">DIRECTV</option>
+        <option value="CLARO">CLARO</option>
+    </select>
+
+    <label>Nombre del Cliente</label>
+    <input type="text" id="nombre" placeholder="Nombre completo">
+
+    <label>Cédula</label>
+    <input type="number" id="cedula" placeholder="Número de documento">
+
+    <label>Correo Electrónico</label>
+    <input type="email" id="correo" placeholder="cliente@correo.com">
+
+    <label>Serial / Deco</label>
+    <input type="text" id="deco" placeholder="Número de equipo">
+
+    <label>Plan</label>
+    <select id="plan"></select>
+
+    <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
+
+    <div class="search-container">
+        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrar()" placeholder="🔍 Buscar por nombre o serial...">
+    </div>
+
+    <div id="lista">Cargando registros...</div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUTvoab1RrNje9x0xq-IWNp99cM4m4-YXbZWDb7IKyNIp2evacI_-J_BUY6HdOYEcfBw/exec";
+    
+    let datos = [];
+    const planes = {
+        'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
+        'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
+    };
+
+    function actualizarPlanes() {
+        const op = document.getElementById('empresa').value;
+        const sel = document.getElementById('plan');
+        sel.innerHTML = planes[op].map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    async function guardar() {
+        const btn = document.getElementById('btnGuardar');
+        const obj = {
+            action: "add",
+            empresa: document.getElementById('empresa').value,
+            nombre: document.getElementById('nombre').value,
+            cedula: document.getElementById('cedula').value,
+            correo: document.getElementById('correo').value,
+            deco: document.getElementById('deco').value.toUpperCase(),
+            plan: document.getElementById('plan').value,
+            fechaReg: new Date().toLocaleDateString()
+        };
+
+        if(!obj.nombre || !obj.deco) return alert("Llena Nombre y Serial");
+
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(obj) });
+        alert("¡Venta Registrada!");
+        location.reload();
+    }
+
+    async function cargar() {
+        try {
+            const res = await fetch(SCRIPT_URL + "?action=get");
+            datos = await res.json();
+            render(datos.reverse());
+        } catch(e) {
+            document.getElementById('lista').innerHTML = "Error al conectar.";
+        }
+    }
+
+    function render(lista) {
+        const cont = document.getElementById('lista');
+        if(lista.length === 0) { cont.innerHTML = "No hay registros."; return; }
+        
+        cont.innerHTML = lista.map(v => `
+            <div class="card">
+                <button class="btn-status ${v.Estado === 'Entregado' ? 'entr' : 'pend'}" onclick="cambiar('${v.Deco}')">
+                    ${v.Estado || 'Pendiente'}
+                </button>
+                <strong>${v.Nombre || 'Sin nombre'}</strong><br>
+                <small>CC: ${v.Cedula || '--'} | SN: ${v.Deco || '--'}</small><br>
+                <small style="color:blue">${v.Empresa} - ${v.Plan}</small>
+            </div>
+        `).join('');
+    }
+
+    function filtrar() {
+        const b = document.getElementById('inputBusqueda').value.toLowerCase();
+        const f = datos.filter(v => v.Nombre.toLowerCase().includes(b) || v.Deco.toLowerCase().includes(b));
+        render(f);
+    }
+
+    async function cambiar(sn) {
+        if(confirm("¿Marcar como entregado?")) {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action:"updateStatus", deco:sn}) });
+            location.reload();
+        }
+    }
+
+    actualizarPlanes();
+    cargar();
+</script>
+</body>
+</html>
