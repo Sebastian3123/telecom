@@ -17,11 +17,11 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; }
         input:focus { border-color: var(--navy); }
         
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; width: 100%; }
-        .btn-reg:disabled { background: #ccc; cursor: not-allowed; }
-        
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; }
+        .btn-reg:disabled { background: #ccc; }
+
         .search-container { margin: 25px 0 10px 0; }
-        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; }
+        .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; font-size: 16px; }
 
         .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; text-align: left; }
         .card-dtv { border-left-color: var(--directv); }
@@ -45,88 +45,3 @@
         <div class="full-w">
             <label>Operador</label>
             <select id="empresa" onchange="actualizarPlanes()">
-                <option value="DIRECTV">DIRECTV</option>
-                <option value="CLARO">CLARO</option>
-            </select>
-        </div>
-        <div class="full-w">
-            <label>Nombre del Cliente</label>
-            <input type="text" id="nombre" placeholder="Nombre completo">
-        </div>
-        <div>
-            <label>Cédula</label>
-            <input type="number" id="cedula" placeholder="Documento">
-        </div>
-        <div>
-            <label>Serial / Deco</label>
-            <input type="text" id="deco" placeholder="Serial">
-        </div>
-        <div class="full-w">
-            <label>Correo Electrónico</label>
-            <input type="email" id="correo" placeholder="ejemplo@correo.com">
-        </div>
-        <div class="full-w">
-            <label>Plan contratado</label>
-            <select id="plan"></select>
-        </div>
-    </div>
-
-    <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
-
-    <div class="search-container">
-        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente, cédula o serial...">
-    </div>
-
-    <div id="listaVentas" style="text-align: center; color: #999; padding: 20px;">Cargando registros...</div>
-</div>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUTvoab1RrNje9x0xq-IWNp99cM4m4-YXbZWDb7IKyNIp2evacI_-J_BUY6HdOYEcfBw/exec";
-    
-    let ventasLocales = [];
-    const planesData = {
-        'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
-        'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
-    };
-
-    function actualizarPlanes() {
-        const op = document.getElementById('empresa').value;
-        document.getElementById('plan').innerHTML = planesData[op].map(p => `<option value="${p}">${p}</option>`).join('');
-    }
-
-    async function guardar() {
-        const btn = document.getElementById('btnGuardar');
-        const d = {
-            action: "add",
-            empresa: document.getElementById('empresa').value,
-            nombre: document.getElementById('nombre').value.trim(),
-            cedula: document.getElementById('cedula').value.trim(),
-            correo: document.getElementById('correo').value.trim(),
-            deco: document.getElementById('deco').value.trim().toUpperCase(),
-            plan: document.getElementById('plan').value,
-            fechaReg: new Date().toLocaleDateString()
-        };
-
-        if(!d.nombre || !d.deco) return alert("Completa Nombre y Serial al menos.");
-        
-        btn.disabled = true;
-        btn.innerText = "⏳ Guardando...";
-        
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(d)
-            });
-            alert("Venta enviada. Se reflejará en unos segundos.");
-            location.reload();
-        } catch (e) {
-            alert("Error al guardar. Revisa el script.");
-            btn.disabled = false;
-            btn.innerText = "REGISTRAR VENTA";
-        }
-    }
-
-    async function cargarVentas() {
-        try {
-            const res = await fetch
