@@ -8,28 +8,30 @@
         :root { --directv: #00A1DE; --claro: #ef3340; --navy: #004a99; --success: #28a745; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 10px; color: #333; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
         h2 { text-align: center; color: var(--navy); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
-        label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #666; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-w { grid-column: span 2; }
+
+        label { display: block; font-size: 0.8em; font-weight: bold; margin-bottom: 3px; color: #666; margin-top: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; }
         input:focus { border-color: var(--navy); }
         
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 17px; transition: 0.3s; }
-        .btn-reg:active { transform: scale(0.98); }
-
-        .search-container { margin: 25px 0 10px 0; position: relative; }
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; width: 100%; }
+        .btn-reg:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .search-container { margin: 25px 0 10px 0; }
         .search-input { border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; }
 
-        /* Estilo de las tarjetas de venta */
-        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
+        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; text-align: left; }
         .card-dtv { border-left-color: var(--directv); }
         .card-cla { border-left-color: var(--claro); }
         
-        .btn-status { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75em; text-transform: uppercase; }
-        .pend { background: #ffc107; color: #000; }
+        .btn-status { float: right; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75em; }
+        .pend { background: #ffc107; color: black; }
         .entr { background: var(--success); color: white; }
         
-        .info-empresa { font-size: 0.75em; font-weight: bold; padding: 2px 6px; border-radius: 4px; color: white; }
+        .badge { font-size: 0.7em; font-weight: bold; padding: 2px 6px; border-radius: 4px; color: white; text-transform: uppercase; }
         .dtv-bg { background: var(--directv); }
         .cla-bg { background: var(--claro); }
     </style>
@@ -39,32 +41,46 @@
 <div class="container">
     <h2>PUNTO PRINCIPAL</h2>
     
-    <label>Operador</label>
-    <select id="empresa" onchange="actualizarPlanes()">
-        <option value="DIRECTV">DIRECTV</option>
-        <option value="CLARO">CLARO</option>
-    </select>
-
-    <label>Nombre del Cliente</label>
-    <input type="text" id="nombre" placeholder="Nombre completo">
-
-    <label>Serial / Deco</label>
-    <input type="text" id="deco" placeholder="Número de equipo">
-
-    <label>Plan</label>
-    <select id="plan"></select>
+    <div class="form-grid">
+        <div class="full-w">
+            <label>Operador</label>
+            <select id="empresa" onchange="actualizarPlanes()">
+                <option value="DIRECTV">DIRECTV</option>
+                <option value="CLARO">CLARO</option>
+            </select>
+        </div>
+        <div class="full-w">
+            <label>Nombre del Cliente</label>
+            <input type="text" id="nombre" placeholder="Nombre completo">
+        </div>
+        <div>
+            <label>Cédula</label>
+            <input type="number" id="cedula" placeholder="Documento">
+        </div>
+        <div>
+            <label>Serial / Deco</label>
+            <input type="text" id="deco" placeholder="Serial">
+        </div>
+        <div class="full-w">
+            <label>Correo Electrónico</label>
+            <input type="email" id="correo" placeholder="ejemplo@correo.com">
+        </div>
+        <div class="full-w">
+            <label>Plan contratado</label>
+            <select id="plan"></select>
+        </div>
+    </div>
 
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
 
     <div class="search-container">
-        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente o serial...">
+        <input type="text" id="inputBusqueda" class="search-input" oninput="filtrarVentas()" placeholder="🔍 Buscar cliente, cédula o serial...">
     </div>
 
     <div id="listaVentas" style="text-align: center; color: #999; padding: 20px;">Cargando registros...</div>
 </div>
 
 <script>
-    // TU LINK ACTUALIZADO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUTvoab1RrNje9x0xq-IWNp99cM4m4-YXbZWDb7IKyNIp2evacI_-J_BUY6HdOYEcfBw/exec";
     
     let ventasLocales = [];
@@ -84,70 +100,33 @@
             action: "add",
             empresa: document.getElementById('empresa').value,
             nombre: document.getElementById('nombre').value.trim(),
+            cedula: document.getElementById('cedula').value.trim(),
+            correo: document.getElementById('correo').value.trim(),
             deco: document.getElementById('deco').value.trim().toUpperCase(),
             plan: document.getElementById('plan').value,
             fechaReg: new Date().toLocaleDateString()
         };
 
-        if(!d.nombre || !d.deco) return alert("Por favor completa los campos.");
+        if(!d.nombre || !d.deco) return alert("Completa Nombre y Serial al menos.");
         
         btn.disabled = true;
         btn.innerText = "⏳ Guardando...";
         
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-        location.reload();
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(d)
+            });
+            alert("Venta enviada. Se reflejará en unos segundos.");
+            location.reload();
+        } catch (e) {
+            alert("Error al guardar. Revisa el script.");
+            btn.disabled = false;
+            btn.innerText = "REGISTRAR VENTA";
+        }
     }
 
     async function cargarVentas() {
         try {
-            const res = await fetch(SCRIPT_URL + "?action=get");
-            const data = await res.json();
-            // Limpiar datos y revertir orden (más nuevos arriba)
-            ventasLocales = data.filter(v => v.Nombre || v.Deco).reverse();
-            renderizar(ventasLocales);
-        } catch(e) {
-            document.getElementById('listaVentas').innerHTML = "No se pudo conectar con el Excel.";
-        }
-    }
-
-    function renderizar(datos) {
-        const div = document.getElementById('listaVentas');
-        if(datos.length === 0) { div.innerHTML = "No hay ventas registradas."; return; }
-        
-        div.innerHTML = datos.map(v => {
-            const esDTV = (v.Empresa || "").toUpperCase() === 'DIRECTV';
-            return `
-            <div class="card ${esDTV ? 'card-dtv' : 'card-cla'}">
-                <button class="btn-status ${v.Estado === 'Entregado' ? 'entr' : 'pend'}" onclick="cambiarEstado('${v.Deco}')">
-                    ${v.Estado || 'Pendiente'}
-                </button>
-                <span class="info-empresa ${esDTV ? 'dtv-bg' : 'cla-bg'}">${v.Empresa || 'TELECOM'}</span>
-                <div style="margin-top:8px; font-weight:bold; font-size:1.1em;">${v.Nombre || 'N/A'}</div>
-                <div style="font-size:0.85em; color:#666; margin-top:4px;">
-                    ${v.Plan || 'Plan General'} | <b>SN: ${v.Deco || ''}</b>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    function filtrarVentas() {
-        const bus = document.getElementById('inputBusqueda').value.toLowerCase();
-        const fil = ventasLocales.filter(v => 
-            (v.Nombre && v.Nombre.toLowerCase().includes(bus)) || 
-            (v.Deco && v.Deco.toLowerCase().includes(bus))
-        );
-        renderizar(fil);
-    }
-
-    async function cambiarEstado(serial) {
-        if(confirm("¿Confirmas que el equipo fue entregado?")) {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action:"updateStatus", deco:serial}) });
-            location.reload();
-        }
-    }
-
-    actualizarPlanes();
-    cargarVentas();
-</script>
-</body>
-</html>
+            const res = await fetch
