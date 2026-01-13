@@ -3,20 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto Principal - Gestión</title>
+    <title>Punto Principal - Gestión Pro</title>
     <style>
-        :root { --navy: #004a99; --directv: #00A1DE; --claro: #ef3340; --success: #28a745; }
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--navy); margin-top: 0; }
-        label { display: block; font-weight: bold; margin-top: 12px; font-size: 13px; color: #555; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        .btn-reg { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 17px; margin-top: 20px; cursor: pointer; }
-        .search-input { margin-top: 25px; border: 2px solid var(--navy); border-radius: 20px; padding: 10px 15px; width: 100%; box-sizing: border-box; }
-        .card { background: white; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .btn-status { float: right; padding: 8px; border-radius: 5px; border: none; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .pend { background: #ffc107; }
+        :root { --navy: #004a99; --directv: #00A1DE; --claro: #ef3340; --success: #28a745; --warning: #ffc107; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--navy); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        label { display: block; font-weight: bold; margin-top: 15px; font-size: 14px; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--navy); outline: none; }
+        
+        .btn-reg { background: var(--navy); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 18px; margin-top: 25px; cursor: pointer; }
+        .btn-reg:disabled { background: #ccc; }
+
+        .search-input { margin-top: 30px; border: 2px solid var(--navy); border-radius: 25px; padding: 12px 20px; width: 100%; box-sizing: border-box; font-size: 16px; }
+
+        .card { background: #fff; border-radius: 10px; padding: 15px; margin-top: 15px; border-left: 6px solid var(--navy); box-shadow: 0 3px 10px rgba(0,0,0,0.08); position: relative; }
+        .btn-status { float: right; padding: 8px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .pend { background: var(--warning); color: #000; }
         .entr { background: var(--success); color: white; }
+        
+        .card-name { font-weight: bold; font-size: 1.1em; display: block; }
+        .card-sub { font-size: 0.85em; color: #666; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -34,42 +43,45 @@
     <input type="text" id="nombre" placeholder="Nombre completo">
 
     <label>Cédula</label>
-    <input type="number" id="cedula" placeholder="Documento">
+    <input type="number" id="cedula" placeholder="Número de documento">
 
     <label>Teléfono de contacto</label>
-    <input type="number" id="telefono" placeholder="Número de celular">
+    <input type="number" id="telefono" placeholder="Ej: 3001234567">
 
     <label>Correo Electrónico</label>
     <input type="email" id="correo" placeholder="cliente@correo.com">
 
     <label>Serial / Deco</label>
-    <input type="text" id="deco" placeholder="Número de serie">
+    <input type="text" id="deco" placeholder="Número de equipo">
 
     <label>Plan</label>
     <select id="plan"></select>
 
     <button class="btn-reg" id="btnGuardar" onclick="guardar()">REGISTRAR VENTA</button>
 
-    <input type="text" id="inputBusqueda" class="search-input" oninput="filtrar()" placeholder="🔍 Buscar cliente o serial...">
-    <div id="lista" style="text-align: center; margin-top: 15px; color: #888;">Cargando registros...</div>
+    <input type="text" id="inputBusqueda" class="search-input" oninput="filtrar()" placeholder="🔍 Buscar por nombre o serial...">
+
+    <div id="lista" style="margin-top: 15px; text-align: center; color: #888;">Cargando registros...</div>
 </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUTvoab1RrNje9x0xq-IWNp99cM4m4-YXbZWDb7IKyNIp2evacI_-J_BUY6HdOYEcfBw/exec";
+    
     let datosLocales = [];
-    const planes = {
+    const planesDisponibles = {
         'DIRECTV': ['Oro Plus', 'Plata', 'Bronce', 'Prepago HD', 'DTV Internet'],
         'CLARO': ['Triple Play', 'Doble Play', 'Solo Internet', 'Claro TV+', 'Pospago']
     };
 
     function actualizarPlanes() {
         const op = document.getElementById('empresa').value;
-        document.getElementById('plan').innerHTML = planes[op].map(p => `<option value="${p}">${p}</option>`).join('');
+        const sel = document.getElementById('plan');
+        sel.innerHTML = planesDisponibles[op].map(p => `<option value="${p}">${p}</option>`).join('');
     }
 
     async function guardar() {
         const btn = document.getElementById('btnGuardar');
-        const obj = {
+        const registro = {
             action: "add",
             empresa: document.getElementById('empresa').value,
             nombre: document.getElementById('nombre').value.trim(),
@@ -81,46 +93,76 @@
             fechaReg: new Date().toLocaleDateString()
         };
 
-        if(!obj.nombre || !obj.deco || !obj.telefono) return alert("Nombre, Teléfono y Serial son obligatorios.");
+        if(!registro.nombre || !registro.deco || !registro.telefono) {
+            return alert("Nombre, Teléfono y Serial son obligatorios.");
+        }
 
         btn.disabled = true;
         btn.innerText = "⏳ Guardando...";
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(obj) });
-        alert("✅ Venta Guardada");
-        location.reload();
+
+        try {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(registro) });
+            alert("✅ Venta registrada con éxito.");
+            location.reload();
+        } catch(e) {
+            alert("Error al guardar. Revisa tu conexión.");
+            btn.disabled = false;
+            btn.innerText = "REGISTRAR VENTA";
+        }
     }
 
     async function cargar() {
         try {
             const res = await fetch(SCRIPT_URL + "?action=get");
-            datosLocales = await res.json();
-            render(datosLocales.filter(v => v.Nombre).reverse());
-        } catch(e) { document.getElementById('lista').innerHTML = "Error al cargar."; }
+            const rawData = await res.json();
+            datosLocales = rawData.filter(v => v.Nombre || v.Deco).reverse();
+            render(datosLocales);
+        } catch(e) {
+            document.getElementById('lista').innerHTML = "⚠️ Error al cargar la base de datos.";
+        }
     }
 
     function render(lista) {
         const cont = document.getElementById('lista');
+        if(lista.length === 0) { cont.innerHTML = "No hay registros."; return; }
+        
         cont.innerHTML = lista.map(v => `
             <div class="card" style="border-left-color: ${v.Empresa === 'DIRECTV' ? '#00A1DE' : '#ef3340'}">
-                <button class="btn-status ${v.Estado === 'Entregado' ? 'entr' : 'pend'}" onclick="cambiarEstado('${v.Deco}')">
+                <button class="btn-status ${(v.Estado || '').trim() === 'Entregado' ? 'entr' : 'pend'}" 
+                        onclick="cambiarEstado('${v.Deco}')">
                     ${v.Estado || 'Pendiente'}
                 </button>
-                <strong>${v.Nombre}</strong><br>
-                <small>Tel: ${v.Telefono || '--'} | SN: ${v.Deco}</small><br>
-                <small style="color:var(--navy)">${v.Plan}</small>
+                <div class="card-info">
+                    <span class="card-name">${v.Nombre}</span>
+                    <span class="card-sub">Tel: ${v.Telefono || '--'} | SN: ${v.Deco}</span><br>
+                    <small style="color:var(--navy); font-weight:bold;">${v.Empresa} - ${v.Plan}</small>
+                </div>
             </div>
         `).join('');
     }
 
     function filtrar() {
-        const b = document.getElementById('inputBusqueda').value.toLowerCase();
-        render(datosLocales.filter(v => v.Nombre.toLowerCase().includes(b) || v.Deco.toLowerCase().includes(b)));
+        const busqueda = document.getElementById('inputBusqueda').value.toLowerCase();
+        const filtrados = datosLocales.filter(v => 
+            (v.Nombre && v.Nombre.toLowerCase().includes(busqueda)) || 
+            (v.Deco && v.Deco.toLowerCase().includes(busqueda))
+        );
+        render(filtrados);
     }
 
-    async function cambiarEstado(sn) {
-        if(confirm("¿Marcar como ENTREGADO?")) {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: "updateStatus", deco: sn}) });
-            location.reload();
+    async function cambiarEstado(serial) {
+        if(confirm("¿Marcar este equipo como ENTREGADO?")) {
+            try {
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify({action: "updateStatus", deco: serial}) 
+                });
+                alert("✅ Estado actualizado.");
+                location.reload();
+            } catch(e) {
+                alert("Error al actualizar.");
+            }
         }
     }
 
